@@ -21,6 +21,8 @@ publishing {
 }
 
 java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
     withJavadocJar()
     withSourcesJar()
 }
@@ -120,6 +122,7 @@ repositories {
     mavenCentral()
     maven { url "https://plugins.gradle.org/m2/" }
     maven { url uri('https://repo.maven.apache.org/maven2/') }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
