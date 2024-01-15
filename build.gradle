@@ -6,12 +6,12 @@ plugins {
 }
 
 group = 'io.gitcoins'
-version = '1.20.2'
+version = '1.20.3'
 description = 'Stream Chat official Java SDK'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
