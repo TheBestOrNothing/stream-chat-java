@@ -24,6 +24,6 @@ jobs:
           distribution: adopt
           java-version: 17
       - name: Build
-        run: ./gradlew signMavenPublication publishMavenPublicationToLocalRepository
+        run: ./gradlew signMavenPublication publishMavenPublicationToLocalRepository --info
       - name: Publish to NEXUS
-        run: ./gradlew publishReleasePublicationToSonatypeRepository --no-daemon --max-workers 1 closeAndReleaseSonatypeStagingRepository --info
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository --info
