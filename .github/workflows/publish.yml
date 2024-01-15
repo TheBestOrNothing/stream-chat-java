@@ -5,7 +5,6 @@ env:
   ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
   ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
   ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
-  SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
 
 on:
   push:
@@ -24,5 +23,7 @@ jobs:
         with:
           distribution: adopt
           java-version: 17
+      - name: Build
+        run: ./gradlew signMavenPublication publishMavenPublicationToLocalRepository
       - name: Publish to NEXUS
         run: ./gradlew publishReleasePublicationToSonatypeRepository --no-daemon --max-workers 1 closeAndReleaseSonatypeStagingRepository --info
