@@ -1,0 +1,30 @@
+name: Publish
+
+env:
+  ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.OSSRH_TOKEN_USERNAME }}
+  ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
+  ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
+  ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
+  SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+\.[0-9]+'
+
+jobs:
+  publish:
+    name: Release build and publish
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3.1.0
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3.6.0
+        with:
+          distribution: adopt
+          java-version: 17
+      - name: Build
+        run: ./gradlew signMavenPublication publishMavenPublicationToLocalRepository
+      - name: Publish to NEXUS
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository --info

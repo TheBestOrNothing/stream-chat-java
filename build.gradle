@@ -5,7 +5,7 @@ plugins {
     id 'org.barfuin.gradle.jacocolog' version '2.0.0'
 }
 
-group = 'io.getstream'
+group = 'io.gitcoins'
 version = '1.20.0'
 description = 'Stream Chat official Java SDK'
 
