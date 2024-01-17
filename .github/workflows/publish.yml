@@ -5,6 +5,7 @@ env:
   ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
   ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
   ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
+  SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}
 
 on:
   push:

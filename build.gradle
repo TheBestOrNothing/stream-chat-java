@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'io.gitcoins'
-version = '1.20.14'
+version = '1.20.15'
 description = 'Stream Chat official Java SDK'
 
 // configure all java components to be published
@@ -27,25 +27,19 @@ java {
     withSourcesJar()
 }
 
-
-
-def hasSigningKey = project.hasProperty("signingKeyId") || project.hasProperty("signingKey")
-if(hasSigningKey) {
-        sign(project)
-}
-void sign(Project project) {
-        project.signing {
-                required { project.gradle.taskGraph.hasTask("publish") }
-                def signingKeyId = project.findProperty("signingKeyId")
-                def signingKey = project.findProperty("signingKey")
-                def signingPassword = project.findProperty("signingPassword")
-                if (signingKeyId) {
-                        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
-                } else if (signingKey) {
-                        useInMemoryPgpKeys(signingKey, signingPassword)
-                }
-                sign publishing.publications.maven
-        }
+// For signing you need to make signingKey and signingPassword available properties
+// See https://docs.gradle.org/current/userguide/signing_plugin.html
+// The following makes the key available via the Gradle Property signingKey
+// export ORG_GRADLE_PROJECT_signingKey=`cat test-private.pgp`
+// export ORG_GRADLE_PROJECT_signingPassword="password"
+// After making the Gradle properties above available, you can try signing using
+// ./gradlew signMavenPublication
+//
+signing {
+    def signingKey = System.getenv('ORG_GRADLE_PROJECT_signingKey')
+    def signingPassword = System.getenv('ORG_GRADLE_PROJECT_signingPassword')
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications
 }
 
 // https://docs.gradle.org/current/userguide/maven_plugin.html#sec:maven_pom_generation
@@ -79,22 +73,30 @@ project.plugins.withType(MavenPublishPlugin).all {
 }
 
 
-nexusPublishing {
-        repositories {
-                //sonatype()
-                sonatype {
-                    nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-                    //nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"))
-                    snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-                    packageGroup = "io.gitcoins"
-                    stagingProfileId = "638cedd9d39c2"
-                }
-        }
+// The following makes the key available for publishing to Nexus
+// export ORG_GRADLE_PROJECT_sonatypeUsername=${token name}
+// export ORG_GRADLE_PROJECT_sonatypePassword=${token password}
+// After making the Gradle properties above available, you can try publish using
+// ./gradlew publishToSonatype
+// ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
 
-        // these are not strictly required. The default timeouts are set to 1 minute. But Sonatype can be really slow.
-        // If you get the error "java.net.SocketTimeoutException: timeout", these lines will help.
-        connectTimeout = Duration.ofMinutes(3)
-        clientTimeout = Duration.ofMinutes(3)
+nexusPublishing {
+    repositories {
+        //sonatype()
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            packageGroup = "io.gitcoins"
+            stagingProfileId = System.getenv('SONATYPE_STAGING_PROFILE_ID')
+            username =  System.getenv('ORG_GRADLE_PROJECT_sonatypeUsername')
+            password =  System.getenv('ORG_GRADLE_PROJECT_sonatypePassword')
+        }
+    }
+
+    // these are not strictly required. The default timeouts are set to 1 minute. But Sonatype can be really slow.
+    // If you get the error "java.net.SocketTimeoutException: timeout", these lines will help.
+    connectTimeout = Duration.ofMinutes(3)
+    clientTimeout = Duration.ofMinutes(3)
 }
 
 // configure publishing to a local directory for testing (not necessary)
@@ -104,10 +106,6 @@ publishing {
         repositories {
                 maven {
                         name = "local"
-                        // change URLs to point to your repos, e.g. http://my.org/repo
-                        //def releasesRepoUrl = "$buildDir/repos/releases"
-                        //def snapshotsRepoUrl = "$buildDir/repos/snapshots"
-                        //url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
 
                         def releasesRepoUrl = layout.buildDirectory.dir('repos/releases')
                         def snapshotsRepoUrl = layout.buildDirectory.dir('repos/snapshots')
