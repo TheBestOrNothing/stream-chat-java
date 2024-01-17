@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'io.gitcoins'
-version = '1.20.15'
+version = '1.20.16'
 description = 'Stream Chat official Java SDK'
 
 // configure all java components to be published
@@ -35,11 +35,24 @@ java {
 // After making the Gradle properties above available, you can try signing using
 // ./gradlew signMavenPublication
 //
-signing {
-    def signingKey = System.getenv('ORG_GRADLE_PROJECT_signingKey')
-    def signingPassword = System.getenv('ORG_GRADLE_PROJECT_signingPassword')
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign publishing.publications
+//
+def hasSigningKey = project.hasProperty("signingKeyId") || project.hasProperty("signingKey")
+if(hasSigningKey) {
+    sign(project)
+}
+void sign(Project project) {
+    project.signing {
+        required { project.gradle.taskGraph.hasTask("publish") }
+        def signingKeyId = project.findProperty("signingKeyId")
+        def signingKey = project.findProperty("signingKey")
+        def signingPassword = project.findProperty("signingPassword")
+        if (signingKeyId) {
+            useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+        } else if (signingKey) {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+        }
+        sign publishing.publications.maven
+    }
 }
 
 // https://docs.gradle.org/current/userguide/maven_plugin.html#sec:maven_pom_generation
